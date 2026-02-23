@@ -8,9 +8,11 @@ You need to have Python and Ollama installed on your system to run this game.
 2. Start the Ollama server in your terminal:
 ###### Bash/CMD:
 ```ollama serve```
+
 3. Open a new terminal window and pull/run the specific model used for the AI opponent:
 ###### Bash/CMD
 ```ollama run gemma3n:e4b```
+
 4. Install the required Python dependencies:
 ###### Bash/CMD
 ```pip install customtkinter ollama```
