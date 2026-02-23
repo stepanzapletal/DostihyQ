@@ -22,6 +22,9 @@ Before starting the main game, it is **highly** recommended to test your local A
 ###### Bash/CMD
 ```python ollamaTEST.py```
 This should result in an example response from *gemma*
+
 2. Run the game: You can launch the game using either the main graphical user interface (GUI) or the command-line version (which is kept primarily for testing and debugging).
+
 3. For the GUI version, run your main file (e.g., ```python GUIVerze.py```).
+
 (For the terminal version, run ```python konzolovaVerze.py```)
