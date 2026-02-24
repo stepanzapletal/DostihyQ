@@ -803,7 +803,7 @@ def run_game_logic(app: QwostihyGUI):
                         .message.content.strip()
                         .lower()
                     )
-                if chce == "a" or "ano":
+                if chce in ["a", "ano"]:
                     player.maKartuPrycZDistancu = False
                     tempNeniNaDistancu = True
                     app.syslog("Použita karta zrušení distancu.")
@@ -880,7 +880,7 @@ def run_game_logic(app: QwostihyGUI):
                             .lower()
                         )
 
-                    if koupit == "a" or "ano":
+                    if koupit in ["a", "ano"]:
                         if player.penize >= aktualniPole.cena:
                             player.penize -= aktualniPole.cena
                             aktualniPole.vlastnik = player.cisloHrace
@@ -915,7 +915,7 @@ def run_game_logic(app: QwostihyGUI):
                                         .lower()
                                     )
 
-                                if kD == "a" or "ano" and player.penize >= cd:
+                                if kD in ["a", "ano"] and player.penize >= cd:
                                     maxDostihu = 4 - aktualniPole.dostihy
                                     if not player.jeAI:
                                         pocet_in = app.wait_for_input(
@@ -956,7 +956,7 @@ def run_game_logic(app: QwostihyGUI):
                                         .message.content.strip()
                                         .lower()
                                     )
-                                if kHD == "a" or "ano" and player.penize >= cd:
+                                if kHD in ["a", "ano"] and player.penize >= cd:
                                     player.penize -= cd
                                     aktualniPole.dostihy = 5
                                     app.syslog("Koupen hlavní dostih!")
@@ -1124,7 +1124,7 @@ def run_game_logic(app: QwostihyGUI):
                             .message.content.strip()
                             .lower()
                         )
-                    if k == "a" or "ano" and player.penize >= aktualniPole.cena:
+                    if k in ["a", "ano"] and player.penize >= aktualniPole.cena:
                         player.penize -= aktualniPole.cena
                         aktualniPole.vlastnik = player.cisloHrace
                 elif aktualniPole.vlastnik != player.cisloHrace:
@@ -1162,7 +1162,7 @@ def run_game_logic(app: QwostihyGUI):
                             .message.content.strip()
                             .lower()
                         )
-                    if k == "a" or "ano" and player.penize >= aktualniPole.cena:
+                    if k in ["a", "ano"] and player.penize >= aktualniPole.cena:
                         player.penize -= aktualniPole.cena
                         aktualniPole.vlastnik = player.cisloHrace
                 elif aktualniPole.vlastnik != player.cisloHrace:
