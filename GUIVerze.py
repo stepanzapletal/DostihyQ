@@ -16,12 +16,12 @@ from ollama import ChatResponse
 ctk.set_appearance_mode("Dark")
 ctk.set_default_color_theme("blue")
 
-version = "1.0.0 Git Base" # id verze (nutno zmenit po zmene gitu)
+version = "1.2.1 MemoryMan" # id verze (nutno zmenit po zmene gitu)
 programName = "DostihyQ"
-preferredModel = "gemma3n:e4b"  # Použij tvůj preferovaný model
+preferredModel = "gemma3n:e4b"  # preferovany model (gemma top zatim)
 useThinking = False
 skipPost = True
-
+requireConfirmations = True # False = AUTO | True = MANUAL
 # ==========================================
 # T Ř Í D Y   A   D A T A
 # ==========================================
@@ -93,7 +93,7 @@ class herniPole:
 
 
 class hrac:
-    def __init__(self, jmeno, cisloHrace, penize, barva, jeAI=False):
+    def __init__(self, jmeno, cisloHrace, penize, barva, AImem, jeAI=False):
         self.jmeno = jmeno
         self.cisloHrace = cisloHrace
         self.penize = penize
@@ -103,6 +103,7 @@ class hrac:
         self.maKartuPrycZDistancu = False
         self.jeNaDistancu = False
         self.kolikKolNehraje = 0
+        self.AImem = []
 
 
 # Barvy stájí
@@ -354,12 +355,12 @@ if pocetPreprav > 1 or pocetStaji > 1:
 
 pocetHracu = 2
 pocetTreneruNaDesce = max([p.cisloTrenera for p in herniDeska if p.typ == "trener"])
-
-hraci = [
-    hrac("Hráč 1 (Ty)", 1, 30000, "#3498db", False),
-    hrac("Počítač (AI)", 2, 30000, "#e74c3c", True),
+pocetZacatecnichPenez = 30000
+hraci = [ # pozor na definice aby se nepriradily k spatnymu
+    hrac("Hráč 1 (Vy)", 1, pocetZacatecnichPenez, "#3498db", AImem=[], jeAI=False),
+    hrac("Počítač (AI)", 2, pocetZacatecnichPenez, "#e74c3c", AImem=[], jeAI=True),
 ]
-
+print(hraci[0].AImem) # test
 # Sestavení původního layoutu pro AI
 layoutDesky = ""
 for pole in herniDeska:
@@ -373,27 +374,33 @@ Below is the default configuration of the game board (this will NOT change):
 Also, here is the dictionary of horses and their attributes:
 {str(koneDict)}
 
-You begin with 30000 money.
+You begin with {str(pocetZacatecnichPenez)} money.
 You should always form your responses very simply. Your final answers should be very simple, stripped of any grammar. For example a simple a/n answer is required, or a number.
 Strategize carefully and think multiple steps ahead. Make decisions that will lead you to victory.
 You should prefer buying stuff rather than not, as not buying anything may disinterest the user.
 I will often ask you questions to which you MUST respond with 'y'/'n' or 'ano'/'ne'. You MUST NEVER respond with grammar or reasoning."""
 
-msgHistory = [{"role": "system", "content": systemPromptBehavior}]
+globalMsgHistory = [{"role": "system", "content": systemPromptBehavior}] # GLOBALNI, NEMENIT!!!!
+for iHrac in hraci:
+    if iHrac.jeAI: # pouze AI hrace
+        iHrac.AImem = [{"role": "system", "content": systemPromptBehavior}]
+    else:
+        print("Hráč není AI, pokračuji bez paměti")
 
+falesnyHrac = hrac("FAKE", 0, 0, "#000000", AImem=globalMsgHistory, jeAI=False)
 
-def queryAI(userprompt, set_status, isMsgTemporary=False):
-    global msgHistory
+def queryAI(currentPlayer, userprompt, set_status, isMsgTemporary=False):
+    playerMemory = currentPlayer.AImem
     if not isMsgTemporary:
-        msgHistory.append({"role": "user", "content": userprompt})
+        playerMemory.append({"role": "user", "content": userprompt})
     try:
         set_status("🤖 AI přemýšlí...")
-        response: ChatResponse = chat(model=preferredModel, messages=msgHistory, think=useThinking)
+        response: ChatResponse = chat(model=preferredModel, messages=playerMemory, think=useThinking)
         set_status("🤖 AI zahrála.")
         print("AI Response: \n" + str(response))
         # ULOŽIT ODPOVĚĎ!
         if not isMsgTemporary:
-            msgHistory.append({"role": "assistant", "content": response.message.content})
+            playerMemory.append({"role": "assistant", "content": response.message.content})
 
         return response
     except Exception as e:
@@ -404,11 +411,18 @@ def queryAI(userprompt, set_status, isMsgTemporary=False):
             (object,),
             {"message": type("obj", (object,), {"content": "a", "thinking": str(e)})},
         )()
+        
+def randomYN():
+    randomChoice = random.choice(["a", "n"])
+    print("RC: "+randomChoice)
+    return randomChoice
 
-# funkce brainwashe (vyčištění po špatném startu)
+# funkce brainwashingu - clearnuti pameti
 def brainwashAI():
-    global msgHistory
-    msgHistory = [{"role": "system", "content": systemPromptBehavior}] # nastavit msgHistory na sysprompt
+    for hrac_ in hraci:
+        if hrac_.jeAI:
+            # tvortba noveho listu (pozor at se to shoduje)
+            hrac_.AImem = [{"role": "system", "content": systemPromptBehavior}]
 
 # ==========================================
 # G U I   A   H E R N Í   D E S K A
@@ -711,6 +725,24 @@ class QwostihyGUI(ctk.CTk):
         self.input_event.set()
 
     def wait_for_input(self, prompt_text, input_type="continue"):
+        global requireConfirmations
+        # --- AUTO MOD ---
+        if not requireConfirmations:
+            # vypsat prompttext
+            self.after(0, lambda: self.prompt_label.configure(text=prompt_text))
+            
+            # pauza
+            #time.sleep(0.5) 
+            
+            # simulace kliků
+            if input_type == "continue":
+                return ""   # continue
+            elif input_type == "yesno":
+                return randomYN()  # y/n random
+            elif input_type == "text":
+                randomInt = random.randint(1,4)
+                return randomInt  # nemelo by jet dyz mam random mode
+        # -------------------------------------------------------
         def setup():
             self.prompt_label.configure(text=prompt_text)
             self.btn_continue.pack_forget()
@@ -753,12 +785,14 @@ def run_game_logic(app: QwostihyGUI):
     def bankrot(hrac_jmeno):
         app.syslog(f"❌ {hrac_jmeno} je v bankrotu! Konec hry.")
         app.wait_for_input("Hra skončila. Zavři okno.", "continue")
+        input("Stiskni Enter pro ukončení hry\n>>>  ")
         os._exit(0)
 
     app.syslog("AI startuje (může trvat až minutu)...")
     if not skipPost:
         while True:
             q = queryAI(
+                falesnyHrac,
                 "Simply respond to this message with 'ano' and nothing else",
                 app.set_status,
                 True,
@@ -798,6 +832,7 @@ def run_game_logic(app: QwostihyGUI):
                 else:
                     chce = (
                         queryAI(
+                            player,
                             "Jsi na distancu. Použít propustku? (a/n)", app.set_status
                         )
                         .message.content.strip()
@@ -873,6 +908,7 @@ def run_game_logic(app: QwostihyGUI):
                     else:
                         koupit = (
                             queryAI(
+                                player,
                                 f"Jsi na {aktualniPole.nazev}, stojí {aktualniPole.cena}. Máš {player.penize}. Koupit? (a/n)",
                                 app.set_status,
                             )
@@ -908,6 +944,7 @@ def run_game_logic(app: QwostihyGUI):
                                 else:
                                     kD = (
                                         queryAI(
+                                            player,
                                             f"Můžeš koupit dostih za {cd}. Máš {player.penize}. Koupit? (a/n)",
                                             app.set_status,
                                         )
@@ -927,6 +964,7 @@ def run_game_logic(app: QwostihyGUI):
                                             pocet = 1
                                     else:
                                         p_ai = queryAI(
+                                            player,
                                             f"Kolik dostihů? Napiš jen číslo 1 až {maxDostihu}.",
                                             app.set_status,
                                         ).message.content.strip()
@@ -950,6 +988,7 @@ def run_game_logic(app: QwostihyGUI):
                                 else:
                                     kHD = (
                                         queryAI(
+                                            player,
                                             f"Můžeš koupit hlavní dostih za {cd}. Koupit? (a/n)",
                                             app.set_status,
                                         )
@@ -1118,6 +1157,7 @@ def run_game_logic(app: QwostihyGUI):
                     else:
                         k = (
                             queryAI(
+                                player,
                                 f"Koupit trenéra za {aktualniPole.cena}? (a/n)",
                                 app.set_status,
                             )
@@ -1156,6 +1196,7 @@ def run_game_logic(app: QwostihyGUI):
                     else:
                         k = (
                             queryAI(
+                                player,
                                 f"Koupit {aktualniPole.nazev} za {aktualniPole.cena}? (a/n)",
                                 app.set_status,
                             )
