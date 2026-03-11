@@ -97,7 +97,9 @@ While this avoids dependency on external services, it introduces its own drawbac
 
 No.
 
-The project originally started as a **terminal-based prototype** that I wrote as a technical demonstration. That version is now unmaintained. Later, the game was rewritten into a **GUI-based version**, which became the final product.
+The only time AI was used in this project was to help debug a mistake I made involving argument priority, which caused an incorrect if statement.
+
+The project originally started as a **terminal-based prototype** that I wrote as a technical demonstration. That version is now unmaintained. Later, the game was rewritten into a **GUI-based version**, which became the final product. 
 
 You may notice some unusual formatting in the code. This is mostly because:
 

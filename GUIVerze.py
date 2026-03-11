@@ -14,12 +14,13 @@ from ollama import ChatResponse
 
 # Nastavení vzhledu
 ctk.set_appearance_mode("Dark")
-ctk.set_default_color_theme("blue")
+#ctk.set_default_color_theme("blue")
+ctk.set_default_color_theme("theme.json")
 
-version = "1.2.1 MemoryMan" # id verze (nutno zmenit po zmene gitu)
-programName = "DostihyQ"
+version = "1.3.2 Bugfix" # id verze (nutno zmenit po zmene gitu, aspon bump)
+programName = "DostihyQ" # neměnit asi
 preferredModel = "gemma3n:e4b"  # preferovany model (gemma top zatim)
-useThinking = False
+useThinking = False # bacha na to gemma to neumí
 skipPost = True
 requireConfirmations = True # False = AUTO | True = MANUAL
 # ==========================================

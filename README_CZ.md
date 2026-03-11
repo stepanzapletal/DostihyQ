@@ -93,9 +93,11 @@ Tento přístup má sice své výhody, ale také nevýhody:
 
 ---
 
-## Pokud je soupeř AI, napsal kód AI také?
+## Pokud je soupeř AI, byl kód také napsaný AI?
 
 Ne.
+
+AI byla v projektu využita pouze jednou a to pro ladění chyby, kterou jsem udělal v prioritě argumentů, což způsobilo nesprávnou podmínku if.
 
 Projekt původně začal jako **terminálová verze**, kterou jsem napsal jako "tech demo". Tato verze nyní není udržovaná a je zastaralá. Později byla hra přepsána do **GUI verze**, která je finálním produktem.
 
